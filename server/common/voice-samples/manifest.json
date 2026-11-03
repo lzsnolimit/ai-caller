@@ -1,0 +1,116 @@
+{
+  "model": "gpt-live-1",
+  "requestedText": "Hello. This is a short sample of my voice.",
+  "format": {
+    "rate": 24000,
+    "channels": 1,
+    "sampleBytes": 2,
+    "maxSeconds": 8
+  },
+  "samples": {
+    "quartz": {
+      "sha256": "c28394f272e8c5cd2a1e9371e031316d2b6815b21a1b2b8a370d288169cf03cd",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "existing_server_preview_cache",
+      "capturedAt": "2026-11-01T06:10:29.233338+00:00",
+      "spokenTextVerified": false
+    },
+    "marin": {
+      "sha256": "04df004bcc18c4d7660aec16b1b14ba38f9c418f82f98f35b00003ccea7c95d4",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:11:39.835015+00:00",
+      "spokenTextVerified": false
+    },
+    "ripple": {
+      "sha256": "519647ff08a004e910c71604a5208def24b6ca90cd959989e2101ee0cf9ade15",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:11:39.842419+00:00",
+      "spokenTextVerified": false
+    },
+    "vesper": {
+      "sha256": "ac19cb44bbec183c68da63a8e0cd279d98cbe30a06e186cf2216398794abd6f1",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:11:50.516331+00:00",
+      "spokenTextVerified": false
+    },
+    "willow": {
+      "sha256": "ec42de1f4afbc7457ba8deeaae860103831e90d533856736ae87fa5264ce156b",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:12:01.109989+00:00",
+      "spokenTextVerified": false
+    },
+    "stone": {
+      "sha256": "e43e717ded539d7c56b457f57db7b6c259e58d716a48f270118cee5c268418ad",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:12:11.386116+00:00",
+      "spokenTextVerified": false
+    },
+    "gleam": {
+      "sha256": "e3f9120adaea74f3b5e15a8c0bfaf500c335d96b7847c0d314bdb7992f63eefe",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:12:21.886220+00:00",
+      "spokenTextVerified": false
+    },
+    "meridian": {
+      "sha256": "91886679656fc0012a193385eee56aa68140c7ff4ba2e3fcf92aa3d02b4da398",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:12:32.309507+00:00",
+      "spokenTextVerified": false
+    },
+    "bossa": {
+      "sha256": "fe8cc1242474eea67e69e49ecd7d4feb7940de1a2720f054944ca6bf04c3395b",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:12:42.553757+00:00",
+      "spokenTextVerified": false
+    },
+    "tempo": {
+      "sha256": "4abbc199b363a07f5573dc2c9cb430effec5f678f68f44a42fae2c8faef0c08b",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:12:53.022283+00:00",
+      "spokenTextVerified": false
+    },
+    "beacon": {
+      "sha256": "17629e115a053756ddd26d06ba43f4ee3701401d1fff5b55996588ebe69290c5",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:13:03.634919+00:00",
+      "spokenTextVerified": false
+    },
+    "delta": {
+      "sha256": "f4e0a0165c4c971bab2f840822f7e4c3ead8cbed5cf8a379feb10eef7f6d551c",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:13:14.110621+00:00",
+      "spokenTextVerified": false
+    },
+    "cinder": {
+      "sha256": "67761f64efcbee6fa223c8b73d925ca7c88baeed174b2fb706009d4e66bb9f46",
+      "bytes": 384044,
+      "durationSeconds": 8.0,
+      "source": "configured_server_live_preview",
+      "capturedAt": "2026-11-01T06:13:24.706766+00:00",
+      "spokenTextVerified": false
+    }
+  }
+}

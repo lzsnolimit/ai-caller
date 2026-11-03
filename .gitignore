@@ -1,0 +1,13 @@
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.env.*
+*.log
+coverage/
+dist/
+
+# Local secrets (pairing keys) if PHONE_DATA_DIR points inside the repo
+pair-keys.json

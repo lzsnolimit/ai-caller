@@ -1,0 +1,101 @@
+{
+  "model": "gpt-live-1",
+  "defaultVoice": "marin",
+  "source": "https://developers.openai.com/api/docs/guides/live-conversations#voice-options",
+  "checkedAt": "2026-10-31",
+  "selection": "project_supported_subset",
+  "selectionBasis": "provider_generated_project_samples",
+  "voices": [
+    {
+      "id": "marin",
+      "displayName": "Marin",
+      "language": null,
+      "regionalInfluence": null,
+      "default": true
+    },
+    {
+      "id": "quartz",
+      "displayName": "Quartz",
+      "language": "English",
+      "regionalInfluence": "Australian",
+      "default": false
+    },
+    {
+      "id": "ripple",
+      "displayName": "Ripple",
+      "language": "English",
+      "regionalInfluence": "Australian",
+      "default": false
+    },
+    {
+      "id": "vesper",
+      "displayName": "Vesper",
+      "language": "English",
+      "regionalInfluence": "British",
+      "default": false
+    },
+    {
+      "id": "willow",
+      "displayName": "Willow",
+      "language": "English",
+      "regionalInfluence": "Irish",
+      "default": false
+    },
+    {
+      "id": "stone",
+      "displayName": "Stone",
+      "language": "English",
+      "regionalInfluence": "Irish",
+      "default": false
+    },
+    {
+      "id": "gleam",
+      "displayName": "Gleam",
+      "language": "English",
+      "regionalInfluence": "North American",
+      "default": false
+    },
+    {
+      "id": "meridian",
+      "displayName": "Meridian",
+      "language": "English",
+      "regionalInfluence": "North American",
+      "default": false
+    },
+    {
+      "id": "bossa",
+      "displayName": "Bossa",
+      "language": "Portuguese",
+      "regionalInfluence": "Brazilian",
+      "default": false
+    },
+    {
+      "id": "tempo",
+      "displayName": "Tempo",
+      "language": "Portuguese",
+      "regionalInfluence": "Brazilian",
+      "default": false
+    },
+    {
+      "id": "beacon",
+      "displayName": "Beacon",
+      "language": "English",
+      "regionalInfluence": "Filipino",
+      "default": false
+    },
+    {
+      "id": "delta",
+      "displayName": "Delta",
+      "language": "English",
+      "regionalInfluence": "Southern U.S.",
+      "default": false
+    },
+    {
+      "id": "cinder",
+      "displayName": "Cinder",
+      "language": "English",
+      "regionalInfluence": "Southern U.S.",
+      "default": false
+    }
+  ]
+}
