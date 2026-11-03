@@ -1,0 +1,23 @@
+# Template. Replace raspberrypi.local with this host's LAN name or address.
+# Install as ~/.config/systemd/user/phone-call-gateway.service (systemd user unit).
+[Unit]
+Description=Phone call gateway (AI voice over Bluetooth HFP)
+Wants=pipewire.service pipewire-pulse.service wireplumber.service
+After=pipewire.service pipewire-pulse.service wireplumber.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+WorkingDirectory=%h/phone-call-gateway
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+# Private file (mode 600) with OPENAI_API_KEY; see env.example.
+EnvironmentFile=%h/.config/phone-call-gateway/env
+ExecStart=%h/phone-call-gateway/.venv/bin/python -m server --host raspberrypi.local --port 8765
+Restart=always
+RestartSec=3
+TimeoutStopSec=12
+KillMode=control-group
+
+[Install]
+WantedBy=default.target

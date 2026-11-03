@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title data-i18n="app.title">AI 电话助理</title>
+<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="brand"><h1 data-i18n="app.title">AI 电话助理</h1><small data-i18n="app.tagline">蓝牙连接手机 · AI 代你打电话、接电话</small></div>
+  <div class="server">
+    <div class="lang" role="group" aria-label="界面语言" data-i18n-aria-label="lang.group"><button type="button" data-lang="zh" lang="zh-CN">中文</button><button type="button" data-lang="en" lang="en">EN</button></div>
+    <input id="origin" placeholder="http://127.0.0.1:8765" aria-label="服务地址" data-i18n-aria-label="server.origin" spellcheck="false">
+    <button id="attach" data-i18n="server.attach">连接</button>
+    <span id="health" data-i18n="health.offline">未连接</span>
+  </div>
+</header>
+
+<p id="notice" role="status"></p>
+
+<section class="line-board" aria-live="polite">
+  <div class="lamp" id="lamp" data-state="offline" aria-hidden="true"></div>
+  <div class="line-text">
+    <p class="line-kicker" data-i18n="line.kicker">线路</p>
+    <h2 id="line-title" data-i18n="line.offline">未连接服务</h2>
+    <p id="line-sub" data-i18n="line.offlineHint">填写服务地址后点“连接”。</p>
+    <p id="line-timer"></p>
+    <div id="line-actions"></div>
+  </div>
+  <div class="line-meta"><span><b id="meta-paired">–</b><span data-i18n="meta.paired">已配对</span></span><span><b id="meta-ready">–</b><span data-i18n="meta.ready">已连接</span></span></div>
+</section>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-page="devices" data-i18n="tab.devices">手机</button>
+  <button role="tab" data-page="calls" data-i18n="tab.calls">通话</button>
+  <button role="tab" data-page="prompt" data-i18n="tab.prompt">通话指令</button>
+</nav>
+
+<section id="devices" class="page">
+  <div class="section-head">
+    <h3 data-i18n="devices.title">我的手机</h3>
+    <div class="row"><button id="add" data-i18n="devices.add">添加手机</button><button id="refresh" class="quiet" data-i18n="devices.refresh">刷新</button></div>
+  </div>
+  <div id="device-list" class="jacks"></div>
+  <p class="hint" data-i18n="devices.busyHint">线路占用时，来电留给手机自己处理。</p>
+
+  <div id="pair-panel" class="panel" hidden>
+    <h3 data-i18n="pair.title">添加手机</h3>
+    <p class="lead" data-i18n="pair.lead">通过蓝牙配对，把一台手机加进来。在 Mac 上扫描前，要先断开已连接的手机。</p>
+    <ol class="steps">
+      <li><div class="body"><p data-i18n="pair.step1">打开手机的蓝牙设置，让它可被发现，然后扫描。</p><div class="row"><button id="scan" data-i18n="pair.scan">扫描手机</button></div><div id="discovered"></div></div></li>
+      <li><div class="body"><p data-i18n="pair.step2">选中扫描结果，或直接填写蓝牙地址。</p><label><span data-i18n="pair.address">蓝牙地址</span><input id="pair-address" class="mono" placeholder="AA:BB:CC:DD:EE:FF" spellcheck="false" autocapitalize="characters"></label></div></li>
+      <li><div class="body"><p data-i18n="pair.step3">开始配对，然后按手机上的提示完成确认。</p><div class="row"><button id="pair-start" class="primary" data-i18n="pair.start">开始配对</button><button id="pair-cancel" hidden data-i18n="pair.cancel">取消配对</button></div><div id="pair-status"></div></div></li>
+    </ol>
+    <div class="foot"><button id="pair-back" class="quiet" data-i18n="common.close">关闭</button></div>
+  </div>
+
+  <div id="inbound-panel" class="panel" hidden>
+    <h3 id="inbound-title" data-i18n="inbound.title">来电接待语</h3>
+    <p class="lead" data-i18n="inbound.lead">AI 接来电时只做三件事：问清楚对方是谁、有什么事、要不要回电，然后记下来。这里可以补充说法，但不能越过下面的系统保护规则。保存后只影响之后的来电。</p>
+    <label><span data-i18n="inbound.label">这台手机的接待语（最多 16 KB，约 5000 个汉字）</span><textarea id="inbound-content" rows="7"></textarea></label>
+    <div class="foot"><button id="inbound-save" class="primary" data-i18n="common.save">保存</button><button id="inbound-back" class="quiet" data-i18n="common.close">关闭</button></div>
+    <p id="inbound-status" class="status" role="status"></p>
+    <details class="fold"><summary data-i18n="inbound.guard">系统保护规则（只读）</summary><pre id="inbound-guard">—</pre></details>
+  </div>
+</section>
+
+<section id="calls" class="page" hidden>
+  <div class="workbench">
+    <div class="wb-list">
+      <div class="section-head"><h3 data-i18n="calls.history">通话记录</h3></div>
+      <div id="conversation-list" class="calls"></div>
+    </div>
+    <div id="detail" class="panel wb-detail"><p class="detail-empty" data-i18n="detail.empty">选一条通话记录，查看对话、任务和监听。</p></div>
+    <div class="panel dial wb-dial">
+      <h3 data-i18n="dial.title">拨号</h3>
+      <p class="lead" data-i18n="dial.lead">选一台已连接的手机，写清楚这通电话要做什么。拨号前会先保存任务。</p>
+      <form id="dial-form">
+        <div class="grid2">
+          <label class="field"><span data-i18n="dial.device">手机</span><select id="dial-device" required></select></label>
+          <label class="field"><span data-i18n="dial.voice">AI 音色</span><select id="dial-voice" required><option value="marin" data-i18n="voice.default" data-i18n-args='{"name":"Marin"}'>Marin（默认）</option></select></label>
+        </div>
+        <div class="voice-row"><button id="voice-preview" type="button" data-i18n="voice.preview">试听音色</button><button id="voice-stop" type="button" class="quiet" data-i18n="common.stop">停止</button><small id="voice-info" data-i18n="voice.loading">正在读取音色…</small></div>
+        <p id="voice-preview-status" class="status" role="status"></p>
+        <audio id="voice-player" controls hidden></audio>
+        <label class="field"><span data-i18n="dial.number">电话号码</span><input id="number" type="tel" class="mono" pattern="\+?[0-9]{1,20}" required placeholder="+86…"></label>
+        <div class="grid2">
+          <label class="field"><span data-i18n="dial.purpose">这通电话要做什么</span><input id="purpose" required maxlength="4096" placeholder="例如：确认明天的预约" data-i18n-placeholder="dial.purposeHint"></label>
+          <label class="field"><span data-i18n="dial.outcome">希望得到什么结果</span><input id="outcome" required maxlength="4096" placeholder="例如：拿到具体时间" data-i18n-placeholder="dial.outcomeHint"></label>
+        </div>
+        <label class="field"><span data-i18n="dial.task">给 AI 的任务说明</span><textarea id="task-content" rows="7" required placeholder="写给 AI 的完整说明：身份、要说的话、要问的问题、什么时候结束。" data-i18n-placeholder="dial.taskHint"></textarea></label>
+        <div class="row"><label class="upload"><input id="task-file" type="file" accept=".txt,.md,text/plain,text/markdown"><span data-i18n="dial.file">从文件读入（.txt / .md，最多 64 KB，约 2 万个汉字）</span></label></div>
+        <div class="foot"><button id="dial-submit" type="submit" class="primary" data-i18n="dial.submit">拨号</button><small data-i18n="dial.saveNote">任务保存失败时不会拨号。</small></div>
+        <p id="dial-gate" role="status"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="prompt" class="page" hidden>
+  <div class="panel">
+    <h3 data-i18n="prompt.title">共用通话指令</h3>
+    <p class="lead" data-i18n="prompt.lead">每通去电都会带上这段指令。只影响之后的拨号，已有通话不变。</p>
+    <textarea id="prompt-content" rows="12"></textarea>
+    <div class="foot"><button id="prompt-save" class="primary" data-i18n="common.save">保存</button></div>
+  </div>
+</section>
+
+</div>
+<script type="module" src="/assets/app.js"></script>
+</body>
+</html>
