@@ -54,7 +54,7 @@ API 和同源 UI 的默认地址为 `127.0.0.1:8765`。Linux 若要在可信局�
   - 线路恢复中：503 `line_recovering`。
   - 目标手机电话状态待核对：409 `device_recovering`。
   - 目标手机已有电话：409 `phone_busy`。
-- `GET /v1/conversations`、`GET /v1/conversations/{id}`：会话列表/详情与 task 快照。条目含 `direction`、`answeredAt`、`endedAt`（Unix 秒，未发生时为 `null`）。列表包含存盘的历史会话（启动时最多加载最近 256 条），支持 `?direction=outbound|inbound` 和 `?address=AA:BB:CC:DD:EE:FF` 过滤；参数无效返回 400 `invalid_direction` 或 `invalid_address`。
+- `GET /v1/conversations`、`GET /v1/conversations/{id}`：会话列表/详情与 task 快照。条目含 `direction`、`number`（拨出的号码或数字来电号码，未知时为 `null`）、`answeredAt`、`endedAt`（Unix 秒，未发生时为 `null`）。列表包含存盘的历史会话（启动时最多加载最近 256 条），支持 `?direction=outbound|inbound` 和 `?address=AA:BB:CC:DD:EE:FF` 过滤；参数无效返回 400 `invalid_direction` 或 `invalid_address`。
 - `GET /v1/conversations/{id}/transcript`：返回存盘的完整对话转写 `{"type":"transcript.record","conversationId","direction","state","complete":bool,"events":[{"seq","role":"caller|ai","eventId","text","startMs","endMs"}]}`。进行中的会话返回已写入的部分（`complete:false`）。实时增量使用 `WS .../transcript/events`。
 - `GET/PUT /v1/devices/{address}/inbound-prompt`：每部手机的来电 prompt。PUT 的 JSON 为 `{"content":"..."}`，UTF-8 最多 16 KiB。GET 返回 `{"address","content","default":bool,"guard":"..."}`；`default` 为 `true` 表示未配置，`content` 此时是默认内容；PUT 空白内容恢复默认；`guard` 是系统保护 prompt 全文，只读。错误：400 `invalid_inbound_prompt`、404 `device_not_found`、503 `inbound_prompt_save_failed`。删除设备配对时同时删除其来电 prompt。
 - `POST /v1/conversations/{id}/commands`、`POST .../end`：当前对话的文字指令与结束。
@@ -84,11 +84,11 @@ API 和同源 UI 的默认地址为 `127.0.0.1:8765`。Linux 若要在可信局�
 
 去电和来电的每个会话都存盘，位于数据目录（默认 `~/.local/share/ai-caller/`，可用 `PHONE_DATA_DIR` 修改）下的 `conversations/<id>/`：
 
-- `meta.json`：会话 ID、方向、手机地址、创建/接通/结束时间、状态、结束原因、收尾结果、错误、任务 ID、音色和音频字节数。状态变化和收尾时整体替换写入。
+- `meta.json`：会话 ID、方向、手机地址、拨出的号码或数字来电号码、创建/接通/结束时间、状态、结束原因、收尾结果、错误、任务 ID、音色和音频字节数。状态变化和收尾时整体替换写入。
 - `transcript.jsonl`：完整对话文字，逐条追加（角色 `caller`/`ai`、文字、开始/结束时间、事件 ID），不受内存缓存上限影响。
 - `call.wav`，仅当 `PHONE_RECORD_CALLS=1`：24 kHz 立体声 PCM16。左声道是手机采集，右声道是 AI 播放。一侧没有声音的时间用静音补上，使两个声道保持同一时间轴。通话没有音频时不创建这个文件。通话结束后，`GET /v1/conversations/{id}/recording` 返回这个文件，控制台在通话详情里播放。
 
-不记录电话号码：号码不写入 meta、转写、任务文件或日志。除非 `PHONE_RECORD_CALLS=1`，否则不保存通话音频。写盘失败只记录诊断，不影响通话。存盘文件包含对话内容，属于敏感数据；目前没有自动清理，也没有删除 API，需要时由管理员手动处理数据目录。
+会话记录保存拨出的号码；来电在手机报告数字来电号码时保存该号码。转写、任务文件和日志不含号码。设备通话列表和手机状态事件不含号码或姓名。除非 `PHONE_RECORD_CALLS=1`，否则不保存通话音频。写盘失败只记录诊断，不影响通话。存盘文件包含对话内容，属于敏感数据；目前没有自动清理，也没有删除 API，需要时由管理员手动处理数据目录。
 
 ### 兼容的低层接口
 

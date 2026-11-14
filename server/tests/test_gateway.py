@@ -275,6 +275,7 @@ class ObjectAdapter(DBusPhoneAdapter):
         self.identity_tracking = native
         self.invocations = []
         self.answered = False
+        self.line = "private"
     async def _call(self, bus, service, path, interface, method, signature="", body=None, guard=None):
         if guard is not None and not guard():
             raise GatewayError("call_not_found", 409)
@@ -287,7 +288,7 @@ class ObjectAdapter(DBusPhoneAdapter):
             if path == ROOT:
                 return [{ROOT + "/ag1": {GATEWAY: {"Address": OTHER}}, ROOT + "/ag9": {GATEWAY: {"Address": PHONE}}}]
             state = "active" if self.answered else "incoming"
-            return [{path + "/call3": {CALL: {"State": state, "LineIdentification": "private", "Name": "private"}}}]
+            return [{path + "/call3": {CALL: {"State": state, "LineIdentification": self.line, "Name": "private"}}}]
         if method == "Introspect":
             return ['<node><interface name="' + interface.replace("org.freedesktop.DBus.Introspectable", GATEWAY if "/call" not in path else CALL) + '"><method name="Dial"/><method name="SendTones"/><method name="Answer"/><method name="Hangup"/></interface></node>']
         if method == "Dial":
@@ -313,6 +314,12 @@ class MappingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(await adapter.operate(PHONE, "dial", "+123"), {"id": "call4"})
         self.assertEqual(adapter.invocations[-1][0], ROOT + "/ag9")
         self.assertEqual(await adapter.calls(PHONE), [{"id": "call3", "state": "incoming", "multiparty": False}])
+        self.assertIsNone(await adapter.peer_number(PHONE, "call3"))
+        adapter.line = "+15551212"
+        self.assertEqual(await adapter.peer_number(PHONE, "call3"), "+15551212")
+        self.assertNotIn("+15551212", str(await adapter.calls(PHONE)))
+        self.assertIsNone(await adapter.peer_number(PHONE, "../ag1/call3"))
+        adapter.line = "private"
         self.assertEqual(await adapter.operate(PHONE, "answer", call_id="call3"), {"ok": True})
         self.assertIn((ROOT + "/ag9/call3", CALL, "Answer"), [i[:3] for i in adapter.invocations])
         self.assertEqual(await adapter.calls(PHONE), [{"id": "call3", "state": "active", "multiparty": False}])

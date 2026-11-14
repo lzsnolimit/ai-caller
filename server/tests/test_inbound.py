@@ -107,6 +107,32 @@ class InboundTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(self.runtime.line.idle())
         self.assertFalse(self.runtime.recovering)
 
+    async def test_a_call_keeps_its_number_and_logs_do_not(self):
+        created = await self.dial()
+        self.assertEqual(created["number"], "+123")
+        self.assertEqual((await self.end(created)).status, 200)
+        await self.until(lambda: self.runtime.line.idle())
+        self.phones.caller_ids[(OTHER, "call1")] = "withheld"
+        hidden = await self.accept(OTHER)
+        self.assertIsNone(hidden.get("number"))
+        self.assertEqual((await self.end(hidden)).status, 200)
+        await self.until(lambda: self.runtime.line.idle())
+        self.phones.caller_ids[(OTHER, "call9")] = "+15550001111"
+        self.ring(OTHER, "call9")
+        await self.until(lambda: any(i.get("number") == "+15550001111" for i in self.runtime.items.values()))
+        shown = next(i for i in self.runtime.items.values() if i.get("number") == "+15550001111")
+        self.assertEqual(shown["number"], "+15550001111")
+        listed = await (await self.client.get("/v1/conversations/" + shown["id"])).json()
+        self.assertEqual(listed["number"], "+15550001111")
+        log = self.root / "logs" / "calls.jsonl"
+        async with asyncio.timeout(2):
+            while not log.is_file():
+                await asyncio.sleep(.01)
+        raw = log.read_text(encoding="utf-8")
+        self.assertNotIn("+123", raw)
+        self.assertNotIn("+15550001111", raw)
+        self.assertNotIn("withheld", raw)
+
     async def test_busy_line_leaves_the_incoming_call_to_the_phone(self):
         outbound = await self.dial(OTHER)
         self.ring(PHONE)
@@ -399,8 +425,8 @@ class InboundTests(unittest.IsolatedAsyncioTestCase):
                              (item["id"], item["direction"], item["address"], "ended", "user_end", item["taskId"]))
             self.assertEqual(meta["cleanup"], {"local": "released", "phone": "ended"})
             self.assertTrue(meta["answeredAt"] and meta["endedAt"] >= meta["created"])
-            self.assertNotIn("number", json.dumps(meta))
-            self.assertNotIn("+123", json.dumps(meta))
+            self.assertEqual(meta.get("number"), "+123" if item is outbound else None)
+            self.assertNotIn("+123", json.dumps({key: value for key, value in meta.items() if key != "number"}))
         full = await (await self.client.get("/v1/conversations/" + inbound["id"] + "/transcript")).json()
         self.assertEqual((full["complete"], full["state"], [e["text"] for e in full["events"]]), (True, "ended", ["你好，我找李先生"]))
         listing = await (await self.client.get("/v1/conversations")).json()
@@ -420,6 +446,10 @@ class InboundTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual([(c["id"], c["state"], c["callStatus"]["state"]) for c in history["conversations"]], [(inbound["id"], "ended", "ended")])
             detail = await (await other.get("/v1/conversations/" + inbound["id"])).json()
             self.assertEqual(detail["task"]["direction"], "inbound")
+            self.assertIsNone(detail["number"])
+            reloaded = await (await other.get("/v1/conversations/" + outbound["id"])).json()
+            self.assertEqual(reloaded["number"], "+123")
+            self.assertNotIn("+123", (self.root / "logs" / "calls.jsonl").read_text(encoding="utf-8"))
             full = await (await other.get("/v1/conversations/" + outbound["id"] + "/transcript")).json()
             self.assertEqual(len(full["events"]), 600)
             self.assertEqual((await other.post("/v1/conversations/" + outbound["id"] + "/end")).status, 200)

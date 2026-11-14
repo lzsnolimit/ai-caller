@@ -17,7 +17,7 @@ A Mac (built-in Bluetooth controller) or a Linux computer such as a Raspberry Pi
 - 🤖 **The AI makes calls for you.** Write a task (who to call, what to do, what result you want). The AI dials from your real phone and talks to the other party.
 - 📞 **The AI answers calls for you.** About 3 seconds after an incoming call starts to ring, the AI answers. It asks who is calling, what the call is about and if a call back is necessary, and records the answers. It does not answer questions or give out your information.
 - 👂 **You stay in control during a call.** Read the live transcript of both sides, listen in the browser, send new instructions to the AI, or hang up.
-- 📝 **Every call is saved.** The full transcript of each outbound and inbound call is kept. Phone numbers and audio are not saved.
+- 📝 **Every call is saved.** The full transcript of each outbound and inbound call is kept, with the number that was dialed or the caller number when the phone provides one. Call audio is not saved.
 - 📱 **Your own phone and number.** The gateway connects to an iPhone or Android phone over Bluetooth hands-free. Calls use the phone's own SIM. No cloud telephony service is necessary.
 - 🖥️ **Runs on a Mac or a Raspberry Pi.** A web console manages phones, pairing and calls, in English or Chinese.
 
@@ -219,13 +219,12 @@ The default data directory is `~/.local/share/ai-caller/`. Directories are creat
 The gateway saves:
 
 - Task files and prompts (private JSON).
-- For each conversation (outbound and inbound), a record and the full transcript under `conversations/<id>/`.
+- For each conversation (outbound and inbound), a record and the full transcript under `conversations/<id>/`. The record includes the number that was dialed, or the caller number when the phone reports a numeric caller ID.
 - A call recording, only when `PHONE_RECORD_CALLS=1`. The file is `conversations/<id>/call.wav`: stereo PCM16 at 24 kHz, left channel from the phone and right channel from the AI.
 - Diagnostic logs under `logs/calls.jsonl`. The logs do not contain phone numbers, task text, transcripts, audio or keys.
 
 The gateway does not save:
 
-- Phone numbers.
 - Call audio, unless `PHONE_RECORD_CALLS=1`.
 - The API key.
 

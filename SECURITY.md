@@ -38,10 +38,10 @@ The default data directory is `~/.local/share/ai-caller/` (change it with `PHONE
 | --- | --- | --- |
 | Tasks (purpose, outcome, details) and prompt snapshots | Yes | `tasks/` |
 | System Prompt and inbound prompts | Yes | data directory |
-| Conversation records (direction, phone Bluetooth address, times, state) | Yes | `conversations/<id>/meta.json` |
+| Conversation records (direction, phone Bluetooth address, dialed or caller number, times, state) | Yes | `conversations/<id>/meta.json` |
 | Full transcripts | Yes | `conversations/<id>/transcript.jsonl` |
 | Diagnostic logs (no numbers, text, audio or keys) | Yes | `logs/calls.jsonl` |
-| Phone numbers | No | — |
+| Phone numbers in logs, transcripts, task files or the device call list | No | — |
 | Call audio | Only when `PHONE_RECORD_CALLS=1` | `conversations/<id>/call.wav` |
 | API key | No | — |
 

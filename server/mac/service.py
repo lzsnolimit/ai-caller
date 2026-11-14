@@ -244,6 +244,10 @@ class MacService:
         await self.device_path(selected)
         return await self.adapter.call_identity(selected, call_id)
 
+    async def peer_number(self, selected, call_id):
+        await self.device_path(selected)
+        return await self.adapter.peer_number(selected, call_id)
+
     def subscribe_calls(self, selected, callback):
         if not self.adapter:
             raise GatewayError('device_disconnected', 409)

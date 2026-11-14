@@ -10,7 +10,7 @@ import time
 
 from .diagnostics import exception_fields
 
-META_KEYS = ('id', 'direction', 'address', 'created', 'answeredAt', 'endedAt', 'state', 'endReason',
+META_KEYS = ('id', 'direction', 'address', 'number', 'created', 'answeredAt', 'endedAt', 'state', 'endReason',
              'cleanup', 'error', 'taskId', 'voice', 'inputBytes', 'outputBytes')
 EVENT_KEYS = ('seq', 'role', 'eventId', 'text', 'startMs', 'endMs')
 KEY = re.compile(r'[a-f0-9]{32}')

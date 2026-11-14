@@ -38,10 +38,10 @@
 | --- | --- | --- |
 | 任务（目的、预期结果、说明）和 prompt 快照 | 是 | `tasks/` |
 | System Prompt 和来电 prompt | 是 | 数据目录 |
-| 会话记录（方向、手机蓝牙地址、时间、状态） | 是 | `conversations/<id>/meta.json` |
+| 会话记录（方向、手机蓝牙地址、拨出或来电号码、时间、状态） | 是 | `conversations/<id>/meta.json` |
 | 完整对话文字 | 是 | `conversations/<id>/transcript.jsonl` |
 | 诊断日志（不含号码、正文、音频或密钥） | 是 | `logs/calls.jsonl` |
-| 电话号码 | 否 | — |
+| 日志、转写、任务文件或设备通话列表中的电话号码 | 否 | — |
 | 通话音频 | 仅当 `PHONE_RECORD_CALLS=1` | `conversations/<id>/call.wav` |
 | API 密钥 | 否 | — |
 

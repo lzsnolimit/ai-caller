@@ -28,7 +28,8 @@ class RecordingTests(unittest.TestCase):
             self.assertTrue(recording_enabled())
 
     def test_stereo_file_aligns_phone_and_ai_and_is_private(self):
-        with tempfile.TemporaryDirectory() as root:
+        # Both channels use one timestamp. Thread startup time is not part of this test.
+        with tempfile.TemporaryDirectory() as root, mock.patch('server.common.recording.time.monotonic', return_value=5000.0):
             failures = []
             recorder = CallRecorder(root, 'a' * 32, failures.append, max_lead=4)
             recorder.write(0, b'\x01\x00\x02\x00')

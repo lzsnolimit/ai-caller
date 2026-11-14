@@ -12,7 +12,7 @@ CALL = "org.pipewire.Telephony.Call1"
 MANAGER = "org.freedesktop.DBus.ObjectManager"
 
 
-from server.common.contracts import GatewayError, address
+from server.common.contracts import GatewayError, address, phone_number
 
 
 def plain(value):
@@ -279,6 +279,15 @@ class DBusPhoneAdapter:
         return [{"id": p.rsplit("/", 1)[-1], "state": props[CALL].get("State", "unknown"),
                  "multiparty": bool(props[CALL].get("Multiparty"))}
                 for p, props in objects.items() if p.startswith(path + "/") and CALL in props]
+
+    async def peer_number(self, requested, call_id):
+        """Numeric LineIdentification for one call. Names and withheld IDs are dropped."""
+        if not re.fullmatch(r"[A-Za-z0-9_]+", call_id):
+            return None
+        path = await self.gateway_path(requested)
+        objects = (await self._call(self.session, TELEPHONY, path, MANAGER, "GetManagedObjects"))[0]
+        props = objects.get(path + "/" + call_id, {}).get(CALL, {})
+        return phone_number(props.get("LineIdentification"))
 
     async def call_identity(self, requested, call_id):
         if not self.identity_tracking:

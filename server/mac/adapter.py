@@ -7,7 +7,7 @@ from collections import deque
 
 from bumble import hci, hfp
 
-from server.common.contracts import GatewayError, address
+from server.common.contracts import GatewayError, address, phone_number
 from .hfp_control import HFPControl, StaleIdentity
 
 STATES = {0: 'active', 1: 'held', 2: 'dialing', 3: 'alerting', 4: 'incoming', 5: 'waiting'}
@@ -136,6 +136,12 @@ class MacPhoneAdapter:
         calls = await self.call_info()
         return [{'id': f'call{call.index}', 'state': STATES.get(int(call.status), 'unknown'),
                  'multiparty': bool(call.multi_party)} for call in calls]
+
+    async def peer_number(self, selected, call_id):
+        """Numeric caller ID for one call. The call list still omits numbers and names."""
+        await self.device_path(selected)
+        call = next((item for item in await self.call_info() if f'call{item.index}' == call_id), None)
+        return phone_number(getattr(call, 'number', None)) if call else None
 
     async def call_identity(self, selected, call_id):
         """本连接拥有的通话返回其身份；尚未接听的来电也返回身份（不代表拥有，不能被挂断）。"""

@@ -265,6 +265,7 @@ function callRow(c, current) {
   const arrow = element('span', inbound ? '↙' : '↗', 'arrow ' + (inbound ? 'in' : 'out'));
   const main = element('div', '', 'main'), l1 = element('div', '', 'l1'), l2 = element('div', '', 'l2');
   l1.append(element('span', directionLabel(c), 'dir'), whoNode(c.address, 'who'));
+  if (c.number) l1.append(document.createTextNode(' '), element('span', c.number, 'mono addr'));
   const live = isActive(c), outcome = String(outcomeText(c)) + (live && c.callStatus?.state === 'unknown' ? t('line.phoneUnverified') : '');
   l2.append(element('span', whenText(c.created)), document.createTextNode(' · '), element('span', outcome, live ? 'live' : outcomeIsBad(c) ? 'bad' : ''));
   main.append(l1, l2);
@@ -297,7 +298,7 @@ function render() {
   const nextDevicesVersion = JSON.stringify([devices, line.state, line.address]);
   if (nextDevicesVersion !== devicesVersion) { devicesVersion = nextDevicesVersion; renderDevices(devices, line); }
   syncDeviceVoice();
-  const nextCallsVersion = JSON.stringify([selected, line.conversationId, conversations.map(c => [c.id, c.direction, c.address, c.state, c.ai, c.error, c.endReason, c.endedAt, c.callStatus?.state])]);
+  const nextCallsVersion = JSON.stringify([selected, line.conversationId, conversations.map(c => [c.id, c.direction, c.address, c.number, c.state, c.ai, c.error, c.endReason, c.endedAt, c.callStatus?.state])]);
   if (nextCallsVersion !== callsVersion) { callsVersion = nextCallsVersion;
     // 当前通话置顶，其余为记录（新到旧）。
     const current = currentConversation(line), history = [...conversations].reverse().filter(c => c !== current);
@@ -342,9 +343,10 @@ function renderDetailHead(item) {
   const next = detailHead(item); if (head.dataset.version === next.dataset.version) return; head.replaceWith(next);
 }
 function detailHead(item) {
-  const head = element('div', '', 'detail-head'); head.dataset.version = JSON.stringify([language(), item.state, item.error, item.endReason, item.endedAt, item.answeredAt, item.callStatus?.state]);
+  const head = element('div', '', 'detail-head'); head.dataset.version = JSON.stringify([language(), item.state, item.error, item.endReason, item.endedAt, item.answeredAt, item.number, item.callStatus?.state]);
   const left = element('div'), title = element('h3');
   title.append(document.createTextNode(`${item.direction === 'inbound' ? '↙' : '↗'} ${directionLabel(item)} `), element('span', deviceName(item.address)));
+  if (item.number) title.append(document.createTextNode(' '), element('span', item.number, 'mono addr'));
   if (item.address) title.append(document.createTextNode(' '), element('span', item.address, 'mono addr'));
   const times = [['detail.started', item.created], ['detail.answered', item.answeredAt], ['detail.ended', item.endedAt]].filter(([, v]) => Number.isFinite(v)).map(([k, v]) => `${t(k)} ${clockText(v).slice(11)}`);
   const seconds = callSeconds(item), live = isActive(item);

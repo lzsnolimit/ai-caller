@@ -10,7 +10,7 @@ import signal
 import sys
 import time
 
-from .contracts import GatewayError, address
+from .contracts import GatewayError, address, phone_number
 from .storage import Store
 from .diagnostics import Diagnostics
 from .call_session import ACTIVE, COMMAND_TIMEOUT, CallSession, DeviceRecovery, Line
@@ -25,6 +25,7 @@ DEFAULT_PROMPT = "You are a concise telephone AI assistant. Identify yourself as
 MAX_HISTORY = 256
 MAX_INBOUND_PROMPT_BYTES = 16384
 DIRECTIONS = ('outbound', 'inbound')
+NUMBER_LOOKUP_SECONDS = 2
 __all__ = ['Conversations', 'ACTIVE', 'COMMAND_TIMEOUT', 'DEFAULT_PROMPT']
 
 
@@ -133,7 +134,8 @@ class Conversations:
                 "diagnostics": {**item.get("diagnostics", {}), "droppedLogs": self.diagnostics.dropped},
                 "voice": item.get("voice") or "marin", "callStatus": self.call_status(item), "commandRevision": item.get('commandRevision', 0),
                 "endReason": item.get('endReason'), "cleanup": item.get('cleanup'),
-                "answeredAt": item.get('answeredAt'), "endedAt": item.get('endedAt')}
+                "answeredAt": item.get('answeredAt'), "endedAt": item.get('endedAt'),
+                "number": phone_number(item.get("number"))}
 
     def listing(self, direction=None, selected=None):
         """会话列表（含持久化历史），可按方向和设备过滤。"""
@@ -197,12 +199,12 @@ class Conversations:
         body = dict(body)
         selected = address(body.get("address"))
         number = body.get("number")
-        if not isinstance(number, str) or not re.fullmatch(r"\+?[0-9]{1,20}", number):
+        if phone_number(number) is None:
             raise GatewayError("invalid_number")
         lock = self.locks.setdefault(selected, asyncio.Lock())
         async with lock:
             body['voice'] = body.get('voice', self.device_voice(selected))
-            item = self.new_item(selected, "outbound", "dialing", body['voice'])
+            item = self.new_item(selected, "outbound", "dialing", body['voice'], number)
             session = CallSession(self, item)
             # Synchronous idle -> busy. No await between the check and the claim.
             self.line.acquire(session)
@@ -237,10 +239,25 @@ class Conversations:
                 await session.finish("start_failed")
                 raise
 
-    def new_item(self, selected, direction, state, voice):
-        return {"id": secrets.token_hex(16), "direction": direction, "address": selected, "state": state,
+    def new_item(self, selected, direction, state, voice, number=None):
+        item = {"id": secrets.token_hex(16), "direction": direction, "address": selected, "state": state,
                 "taskId": None, "voice": voice, "created": time.time(), "callId": None,
                 "ai": "not_started", "error": None, "commands": [], "inputBytes": 0, "outputBytes": 0}
+        number = phone_number(number)
+        if number:
+            item["number"] = number
+        return item
+
+    async def remembered_number(self, selected, call_id):
+        """Numeric caller ID when the phone reports one. A lookup failure leaves the number unknown."""
+        lookup = getattr(self.adapter, "peer_number", None)
+        if lookup is None:
+            return None
+        try:
+            value = await asyncio.wait_for(lookup(selected, call_id), NUMBER_LOOKUP_SECONDS)
+        except Exception:
+            return None
+        return phone_number(value)
 
     def register(self, item, session, task):
         item.update(taskId=task["id"], voice=task["voice"])
@@ -256,8 +273,9 @@ class Conversations:
         if self.closing:
             raise GatewayError("server_stopping", 503)
         async with self.locks.setdefault(selected, asyncio.Lock()):
+            number = await self.remembered_number(selected, call_id)
             voice = self.device_voice(selected)
-            item = self.new_item(selected, "inbound", "answering", voice)
+            item = self.new_item(selected, "inbound", "answering", voice, number)
             session = CallSession(self, item)
             self.line.acquire(session)
             try:

@@ -54,7 +54,7 @@ This API has no authentication. Do not expose the port to the internet or to an 
   - Line recovering: 503 `line_recovering`.
   - Target phone call state needs a check: 409 `device_recovering`.
   - Target phone already has a call: 409 `phone_busy`.
-- `GET /v1/conversations`, `GET /v1/conversations/{id}`: conversation list and detail with the task snapshot. Items contain `direction`, `answeredAt` and `endedAt` (Unix seconds, `null` if not yet). The list includes saved history (at most the latest 256 at startup). Filters: `?direction=outbound|inbound` and `?address=AA:BB:CC:DD:EE:FF`. Invalid values return 400 `invalid_direction` or `invalid_address`.
+- `GET /v1/conversations`, `GET /v1/conversations/{id}`: conversation list and detail with the task snapshot. Items contain `direction`, `number` (the dialed number or a numeric caller ID, `null` when unknown), `answeredAt` and `endedAt` (Unix seconds, `null` if not yet). The list includes saved history (at most the latest 256 at startup). Filters: `?direction=outbound|inbound` and `?address=AA:BB:CC:DD:EE:FF`. Invalid values return 400 `invalid_direction` or `invalid_address`.
 - `GET /v1/conversations/{id}/transcript`: the saved full transcript `{"type":"transcript.record","conversationId","direction","state","complete":bool,"events":[{"seq","role":"caller|ai","eventId","text","startMs","endMs"}]}`. For a conversation in progress, it returns the part written so far (`complete:false`). Live updates use `WS .../transcript/events`.
 - `GET/PUT /v1/devices/{address}/inbound-prompt`: the inbound prompt of each phone. The PUT body is `{"content":"..."}`, UTF-8, at most 16 KiB. GET returns `{"address","content","default":bool,"guard":"..."}`. `default: true` means not configured, and `content` is the default text. A PUT with blank content restores the default. `guard` is the full read-only guard prompt. Errors: 400 `invalid_inbound_prompt`, 404 `device_not_found`, 503 `inbound_prompt_save_failed`. When you remove a device pairing, its inbound prompt is also removed.
 - `POST /v1/conversations/{id}/commands`, `POST .../end`: text instructions for the current conversation, and end.
@@ -84,11 +84,11 @@ The guard prompt decreases the risk of leaks. It cannot guarantee that the model
 
 Each conversation, outbound and inbound, is saved under `conversations/<id>/` in the data directory (default `~/.local/share/ai-caller/`, change it with `PHONE_DATA_DIR`):
 
-- `meta.json`: conversation ID, direction, phone address, create/answer/end times, state, end reason, cleanup result, error, task ID, voice and audio byte counts. The server replaces the whole file when the state changes and at cleanup.
+- `meta.json`: conversation ID, direction, phone address, the dialed number or numeric caller ID, create/answer/end times, state, end reason, cleanup result, error, task ID, voice and audio byte counts. The server replaces the whole file when the state changes and at cleanup.
 - `transcript.jsonl`: the full transcript, appended line by line (role `caller`/`ai`, text, start/end times, event ID). The in-memory cache limit does not apply.
 - `call.wav`, only when `PHONE_RECORD_CALLS=1`: stereo PCM16 at 24 kHz. The left channel is the phone capture and the right channel is the AI playback. Silence fills the time when one side is quiet, so both channels stay on the same clock. The file is not created when the call has no audio. After the call ends, `GET /v1/conversations/{id}/recording` returns this file. The console plays it from the call detail.
 
-Phone numbers are not recorded: not in meta, transcripts, task files or logs. Call audio is not saved unless `PHONE_RECORD_CALLS=1`. A write failure only records a diagnostic and does not affect the call. The saved files contain conversation content and are sensitive. There is no automatic cleanup and no delete API. An administrator must manage the data directory manually.
+The conversation record stores the number that was dialed, or the caller number when the phone reports a numeric caller ID. Transcripts, task files and logs do not contain the number. The device call list and phone-state events do not contain numbers or names. Call audio is not saved unless `PHONE_RECORD_CALLS=1`. A write failure only records a diagnostic and does not affect the call. The saved files contain conversation content and are sensitive. There is no automatic cleanup and no delete API. An administrator must manage the data directory manually.
 
 ### Compatible low-level API
 

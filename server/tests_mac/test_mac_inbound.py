@@ -47,6 +47,14 @@ def no_calls(protocol):
 
 
 class MacAnswerTests(unittest.IsolatedAsyncioTestCase):
+    async def test_a_numeric_caller_id_is_readable_without_appearing_on_the_call_list(self):
+        adapter, protocol = inbound_fixture()
+        protocol.current = [ringing('+15551212')]
+        self.assertEqual(await adapter.peer_number(PHONE, 'call1'), '+15551212')
+        self.assertNotIn('+15551212', str(await adapter.calls(PHONE)))
+        self.assertIsNone(await adapter.peer_number(PHONE, 'call9'))
+        await adapter.close()
+
     async def test_unanswered_incoming_has_identity_that_survives_answer(self):
         adapter, protocol = inbound_fixture()
         self.assertEqual(await adapter.calls(PHONE), [{'id': 'call1', 'state': 'incoming', 'multiparty': False}])
@@ -59,6 +67,7 @@ class MacAnswerTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(protocol.commands, [])
         self.assertEqual(await adapter.operate(PHONE, 'answer', call_id='call1'), {'ok': True})
         self.assertEqual(await adapter.call_identity(PHONE, 'call1'), before)
+        self.assertIsNone(await adapter.peer_number(PHONE, 'call1'))
         self.assertNotIn('caller-fixture', str(await adapter.calls(PHONE)))
         await adapter.close()
 

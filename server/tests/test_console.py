@@ -53,6 +53,7 @@ class Phones:
         self.connected = {PHONE, OTHER}
         self.listeners = {PHONE: set(), OTHER: set()}
         self.names = {}
+        self.caller_ids = {}
     def subscribe_calls(self, selected, callback):
         self.listeners[selected].add(callback)
         return lambda: self.listeners[selected].discard(callback)
@@ -71,6 +72,8 @@ class Phones:
     async def calls(self, selected):
         await self.device_path(selected)
         return self.current[selected]
+    async def peer_number(self, selected, call_id):
+        return self.caller_ids.get((selected, call_id))
     async def call_identity(self, selected, call_id):
         return (selected,call_id,self.dials.count(selected)) if self.current[selected] and not self.current[selected][0].get("newCall") else None
     async def hangup_owned(self, selected, call_id, identity):
