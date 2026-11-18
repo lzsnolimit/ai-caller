@@ -700,6 +700,11 @@ class ConsoleTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.headers["Access-Control-Allow-Origin"],"http://127.0.0.1:5173")
         response = await self.client.post("/v1/discovery",headers={"Origin":"https://untrusted.invalid"})
         self.assertEqual(response.status,403)
+    async def test_tls_proxy_same_host_origin_is_allowed(self):
+        headers = {"Host":"phone.example.test","Origin":"https://phone.example.test"}
+        self.assertEqual((await self.client.get("/v1/console",headers=headers)).status,200)
+        headers["Origin"] = "https://other.example.test"
+        self.assertEqual((await self.client.get("/v1/console",headers=headers)).status,403)
     async def test_busy_device_cannot_disconnect_or_remove(self):
         await self.dial()
         for operation in ("disconnect","remove"):

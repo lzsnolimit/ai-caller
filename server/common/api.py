@@ -76,7 +76,9 @@ def create_app(adapter, audio_factory=None, *, managed=False, store=None):
                 fields.update(clockDomain='python_monotonic', durationMs=round((time.monotonic()-started)*1000))
                 hub.runtime.diagnostics.write(secrets.token_hex(16), fields)
         origin = request.headers.get("Origin")
-        allowed = {f"{request.scheme}://{request.host}", "http://127.0.0.1:5173", "http://localhost:5173"}
+        # A TLS-terminating proxy (e.g. a Cloudflare tunnel) forwards https pages over plain http,
+        # so the server's own host counts as same-origin under either scheme.
+        allowed = {f"http://{request.host}", f"https://{request.host}", "http://127.0.0.1:5173", "http://localhost:5173"}
         allowed.update(os.environ.get("PHONE_CLIENT_ORIGINS", "").split(","))
         if origin and origin not in allowed:
             return web.json_response({"error": {"code": "origin_not_allowed"}}, status=403)
